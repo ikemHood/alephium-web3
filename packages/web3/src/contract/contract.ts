@@ -242,17 +242,33 @@ export class Contract extends Artifact {
     this.codeHashForTesting = undefined
   }
 
+  isInlineFunc(index: number): boolean {
+    if (index >= this.functions.length) {
+      throw new Error(`Invalid function index ${index}, function size: ${this.functions.length}`)
+    }
+    const inlineFuncFromIndex = this.decodedContract.methods.length
+    return index >= inlineFuncFromIndex
+  }
+
   getByteCodeForTesting(): string {
     if (this.bytecodeForTesting !== undefined) return this.bytecodeForTesting
 
-    if (this.publicFunctions().length == this.functions.length) {
+    const hasInlineFunction = this.functions.length > this.decodedContract.methods.length
+    if (!hasInlineFunction && this.publicFunctions().length == this.functions.length) {
       this.bytecodeForTesting = this.bytecodeDebug
       this.codeHashForTesting = this.codeHashDebug
       return this.bytecodeForTesting
     }
 
+    const inlineFuncFromIndex = this.decodedContract.methods.length
     const decodedDebugContract = contract.contractCodec.decodeContract(hexToBinUnsafe(this.bytecodeDebug))
-    const methods = decodedDebugContract.methods.map((method) => ({ ...method, isPublic: true }))
+    const methods = decodedDebugContract.methods.map((method, index) => {
+      if (index >= inlineFuncFromIndex) {
+        return { ...method, isPublic: true, usePreapprovedAssets: true, useContractAssets: true }
+      } else {
+        return { ...method, isPublic: true }
+      }
+    })
     const bytecodeForTesting = contract.contractCodec.encodeContract({
       fieldLength: decodedDebugContract.fieldLength,
       methods: methods
@@ -455,6 +471,7 @@ export class Contract extends Artifact {
           )
     const immFields = allFields.filter((f) => !f.isMutable).map((f) => toApiVal(f.value, f.type))
     const mutFields = allFields.filter((f) => f.isMutable).map((f) => toApiVal(f.value, f.type))
+    const methodIndex = this.getMethodIndex(funcName)
     return {
       group: params.group,
       blockHash: params.blockHash,
@@ -462,11 +479,11 @@ export class Contract extends Artifact {
       txId: params.txId,
       address: params.address,
       callerAddress: params.callerAddress,
-      bytecode: this.bytecodeDebug,
+      bytecode: this.isInlineFunc(methodIndex) ? this.getByteCodeForTesting() : this.bytecodeDebug,
       initialImmFields: immFields,
       initialMutFields: mutFields,
       initialAsset: typeof params.initialAsset !== 'undefined' ? toApiAsset(params.initialAsset) : undefined,
-      methodIndex: this.getMethodIndex(funcName),
+      methodIndex,
       args: this.toApiArgs(funcName, params.testArgs),
       existingContracts: this.toApiContractStates(params.existingContracts),
       inputAssets: toApiInputAssets(params.inputAssets)
@@ -1851,7 +1868,10 @@ export async function signExecuteMethod<I extends ContractInstance, F extends Fi
 ): Promise<SignExecuteScriptTxResult> {
   const methodIndex = contract.contract.getMethodIndex(methodName)
   const functionSig = contract.contract.functions[methodIndex]
-  const methodUsePreapprovedAssets = contract.contract.isMethodUsePreapprovedAssets(methodIndex)
+  const isDevnet = await contract.contract.isDevnet(params.signer)
+  const methodUsePreapprovedAssets = isDevnet
+    ? contract.contract.isInlineFunc(methodIndex) || contract.contract.isMethodUsePreapprovedAssets(methodIndex)
+    : contract.contract.isMethodUsePreapprovedAssets(methodIndex)
   const bytecodeTemplate = getBytecodeTemplate(
     methodIndex,
     methodUsePreapprovedAssets,
@@ -1882,7 +1902,7 @@ export async function signExecuteMethod<I extends ContractInstance, F extends Fi
   }
 
   const result = await signer.signAndSubmitExecuteScriptTx(signerParams)
-  if (isContractDebugMessageEnabled() && (await contract.contract.isDevnet(signer))) {
+  if (isContractDebugMessageEnabled() && isDevnet) {
     await printDebugMessagesFromTx(result.txId, signer.nodeProvider)
   }
   return result

@@ -191,6 +191,12 @@
       "bytecodeDebugPatch": "",
       "codeHashDebug": ""
     },
+    "InlineTest": {
+      "sourceFile": "test/inline.ral",
+      "sourceCodeHash": "d03f916d84a47be0f238e9fb4c9a9c8a07966805f4f20c0081b1c2b8c651b8f8",
+      "bytecodeDebugPatch": "=3-1+2=2+4039=62+000000000109b413c32386f26fc10000a9a0000d2aa100a00002",
+      "codeHashDebug": "42eaecd6f4e1bc5a298fefad983fc698fd826d112ee83ab190e155eacb51d74e"
+    },
     "InsertIntoMap": {
       "sourceFile": "test/map.ral",
       "sourceCodeHash": "331b92fe6617c1c7ac7f742ceea1943a06717477a2bd03ca266d23c65d844de6",

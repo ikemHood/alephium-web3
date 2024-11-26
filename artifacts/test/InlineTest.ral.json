@@ -1,0 +1,40 @@
+{
+  "version": "v3.9.0",
+  "name": "InlineTest",
+  "bytecode": "01011f01010000010ad3811965ccb413c32386f26fc10000a9a0000d2aa100a00002",
+  "codeHash": "5ec60ac0a6e53a40956d05de67ea90fd9ca958e6fea80e0f1c44c3fe0395871e",
+  "fieldsSig": {
+    "names": [
+      "count"
+    ],
+    "types": [
+      "U256"
+    ],
+    "isMutable": [
+      true
+    ]
+  },
+  "eventsSig": [],
+  "functions": [
+    {
+      "name": "nextCount",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": [
+        "U256"
+      ]
+    },
+    {
+      "name": "nextCount_",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": [
+        "U256"
+      ]
+    }
+  ],
+  "constants": [],
+  "enums": []
+}

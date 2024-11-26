@@ -1,0 +1,12 @@
+Contract InlineTest(mut count: U256) {
+  @inline fn nextCount_() -> U256 {
+    transferTokenToSelf!(callerAddress!(), ALPH, 0.01 alph)
+    count = count + 1
+    return count
+  }
+
+  @using(updateFields = true, checkExternalCaller = false, preapprovedAssets = true, assetsInContract = true)
+  pub fn nextCount() -> U256 {
+    return nextCount_()
+  }
+}
