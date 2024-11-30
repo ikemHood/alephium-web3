@@ -8,6 +8,8 @@
     "@alephium/web3-wallet": "workspace:*"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.10",
     "@swc/core": "^1.4.1",
     "@types/jest": "^28.1.8",
     "@types/node": "^16.18.23",
@@ -28,7 +30,10 @@
     "audit": "npm audit --omit=dev",
     "update-schemas": "pnpm --stream -r run update-schemas",
     "version": "pnpm --stream -r exec npm version",
-    "publish": "npm run build && pnpm -r publish --access public --no-git-checks"
+    "publish": "npm run build && pnpm -r publish --access public --no-git-checks",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "prettier": {
     "printWidth": 120,
